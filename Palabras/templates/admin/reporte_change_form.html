@@ -1,0 +1,46 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block after_related_objects %}
+{{ block.super }}
+{% if original %}
+  <h3 style="margin-top: 40px;">Gráfico de Peso Relativo de Palabras</h3>
+  <canvas id="reporteChart" width="400" height="200"></canvas>
+
+  <script>
+    fetch("{% url 'admin:reporte_chart_data' original.pk %}")
+      .then(response => response.json())
+      .then(data => {
+        const ctx = document.getElementById('reporteChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: data.labels,
+            datasets: [{
+              label: 'Peso relativo (%)',
+              data: data.weights,
+              backgroundColor: 'rgba(54, 162, 235, 0.6)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) { return value + '%' }
+                }
+              }
+            }
+          }
+        });
+      });
+  </script>
+{% endif %}
+{% endblock %}
